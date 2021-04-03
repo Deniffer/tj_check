@@ -1,7 +1,9 @@
 ## 这是我写的一个小玩意 可以帮助需要调剂的同学获得最新的消息
 *因为只用了4个小时来写，估计会有很多bug，建议提issue 看到后会改，欢迎star && fork*
 
-[教学视频(B站)：目前在审核](https://www.bilibili.com/video/BV1NZ4y1c7p7/)
+[教学视频(B站)](https://www.bilibili.com/video/BV1NZ4y1c7p7/)
+
+B站审核已经通过，请大家尽量在b站观看，获得更好的观看体验！
 
 [教学视频](https://pan.deniffer.com/teach.mp4)
 ### Usage:
