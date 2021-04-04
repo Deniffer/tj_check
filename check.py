@@ -10,6 +10,7 @@ import pandas as pd
 from time import sleep
 from selenium.webdriver.support.ui import Select
 import os
+import datetime
 
 #email part
 from set_up_email import set_up_email,send_email,get_html_msg
@@ -60,7 +61,7 @@ def select(driver,loc="不限",study="不限"):
     study_way.select_by_visible_text(study)
 
 def get_data(driver):
-    
+    print("----Now Working Geting Data------")
     html = driver.page_source #获得当前页面的html
     df = pd.read_html(html)[1] #html里有两个table，第二个是我们需要的
     page = driver.find_elements_by_class_name("tj-paging-item") #获取页数
@@ -73,7 +74,8 @@ def get_data(driver):
         current_html = driver.page_source
         current_df = pd.read_html(current_html)[1] # two table in html
         df = df.append(current_df) #将每一个页面的数据都加到df里面
-    
+    driver.close()
+    print("-------Getted All wanted Data return Back!---------")
     return df
 
 #只查阅自己可以申请的院校信息
@@ -135,3 +137,6 @@ if __name__ == "__main__":
         mail_content = get_html_msg(df)
         smtp = set_up_email(host_server,sender_qq,pwd)
         send_email(smtp,mail_title,mail_content,sender_email,receiver)
+    print("-------------PRINT TIME ---------------------")  
+    print("Current Time is %s \n"%datetime.datetime.now())
+    print("------------- Job Done -----------------------")
