@@ -83,9 +83,11 @@ def apply_true(df):
     return df[df["操作"] == "申请"]
 
 def compare(df,current_df):
+    df["split"] = False
+    current_df["split"]  = True
     df = df.append(current_df)
     df.drop_duplicates(subset = ['招生单位', '院系所', '专业', '研究方向', '学习方式', '计划余额'],keep=False,inplace=True)
-    return df
+    return df[df["split"] == True].drop(axis=1,columns=["split"])
 if __name__ == "__main__":
     
     ### 设置区域
