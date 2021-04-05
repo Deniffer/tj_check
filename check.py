@@ -9,6 +9,8 @@ import random
 import pandas as pd
 from time import sleep
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.service import Service
+
 import os
 import datetime
 
@@ -74,7 +76,7 @@ def get_data(driver):
         current_html = driver.page_source
         current_df = pd.read_html(current_html)[1] # two table in html
         df = df.append(current_df) #将每一个页面的数据都加到df里面
-    driver.close()
+    driver.quit
     print("-------Getted All wanted Data return Back!---------")
     return df
 
@@ -106,7 +108,12 @@ if __name__ == "__main__":
     receiver =  ""  #接受邮箱
 
     ## 启动part
+    
+    driver_service = Service(webdriver_path)   
+    driver_service.command_line_args()
+    driver_service.start()
     chrome_options = webdriver.ChromeOptions()
+
     #无界面模式  建议debug的时候把这行给注释掉
     chrome_options.add_argument('--headless')
     
@@ -117,6 +124,8 @@ if __name__ == "__main__":
 
     # 获取数据
     df = get_data(driver)
+    driver_service.stop()      #退出chromedriver
+    
     if apply_only:
         df = apply_true(df)
         
