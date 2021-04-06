@@ -71,7 +71,7 @@ def get_data(driver):
         df = pd.read_html(html)[1] #html里有两个table，第二个是我们需要的
     except:#并释放driver资源
         print("Can Not read_html ,save html for next debug!")
-        with open("debug.html",mode="wb") as fd:
+        with open("debug.html",mode="w") as fd:
             fd.write(html)
         print("GET debug_html! ERROR return!")
         driver.quit()
