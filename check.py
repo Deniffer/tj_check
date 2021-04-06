@@ -13,13 +13,14 @@ from selenium.webdriver.chrome.service import Service
 
 import os
 import datetime
+import sys
 
 #email part
 from set_up_email import set_up_email,send_email,get_html_msg
 
 # needed webdriver path
 def set_up_selenium(webdriver_path,chrome_options):
-    return webdriver.Chrome(webdriver_path,chrome_options=chrome_options)
+    return webdriver.Chrome(webdriver_path,options=chrome_options)
 
 # set up your personnal info ,like your account
 def set_up_login(username,password,driver):
@@ -65,7 +66,17 @@ def select(driver,loc="不限",study="不限"):
 def get_data(driver):
     print("----Now Working Geting Data------")
     html = driver.page_source #获得当前页面的html
-    df = pd.read_html(html)[1] #html里有两个table，第二个是我们需要的
+    
+    try:
+        df = pd.read_html(html)[1] #html里有两个table，第二个是我们需要的
+    except:#并释放driver资源
+        print("Can Not read_html ,save html for next debug!")
+        with open("debug.html",mode="wb") as fd:
+            fd.write(html)
+        print("GET debug_html! ERROR return!")
+        driver.quit()
+        return pd.DataFrame()
+    
     page = driver.find_elements_by_class_name("tj-paging-item") #获取页数
     page_len = len(page) -3 # two for switch ，one for current page
     print(page_len)
@@ -76,7 +87,7 @@ def get_data(driver):
         current_html = driver.page_source
         current_df = pd.read_html(current_html)[1] # two table in html
         df = df.append(current_df) #将每一个页面的数据都加到df里面
-    driver.quit
+    driver.quit()
     print("-------Getted All wanted Data return Back!---------")
     return df
 
@@ -85,28 +96,27 @@ def apply_true(df):
     return df[df["操作"] == "申请"]
 
 def compare(df,current_df):
-    df["split"] = False
-    current_df["split"]  = True
+    df["split"] = True
+    current_df["split"]  = False
     df = df.append(current_df)
-    df.drop_duplicates(subset = ['招生单位', '院系所', '专业', '研究方向', '学习方式', '计划余额'],keep=False,inplace=True)
+    df.drop_duplicates(subset = ['招生单位', '院系所', '专业', '研究方向', '学习方式'],keep=False,inplace=True)
     return df[df["split"] == True].drop(axis=1,columns=["split"])
 if __name__ == "__main__":
     
     ### 设置区域
-    webdriver_path = r"/usr/bin/chromedriver"        #chromedriver路径
+    webdriver_path = r"/usr/sbin/chromedriver"        #chromedriver路径
     username = ""   #研招网账号
     password = ""   #密码
     major = ""          #想要查询的专业
-    loc = "不限"                #想要查询的地区 如北京、广东等一定要和研招网上可以选的地区一致
-    study ="不限"               #学习方式 ： “不限” “全日制” “非全日制”  
+    loc = ""                #想要查询的地区 如北京、广东等一定要和研招网上可以选的地区一致
+    study =""               #学习方式 ： “不限” “全日制” “非全日制”  
     apply_only = True          #只查看能申请的
 
-    host_server = ""             #smtp host 非qq的话要修改
+    host_server = "smtp.qq.com"             #smtp host 非qq的话要修改
     sender_qq = ""
     pwd = ""                # qq邮箱授权码
     sender_email = ""  # qq邮箱
     receiver =  ""  #接受邮箱
-
     ## 启动part
     
     driver_service = Service(webdriver_path)   
@@ -124,6 +134,12 @@ if __name__ == "__main__":
 
     # 获取数据
     df = get_data(driver)
+    ## ERROR control
+    if df.empty == True:
+        driver_service.stop()
+        print("stop driver_service, exit for error html table ! BUG needed solve!")
+        sys.exit(1)
+    
     driver_service.stop()      #退出chromedriver
     
     if apply_only:
@@ -151,3 +167,4 @@ if __name__ == "__main__":
     print("-------------PRINT TIME ---------------------")  
     print("Current Time is %s \n"%datetime.datetime.now())
     print("------------- Job Done -----------------------")
+    sys.exit(0)
